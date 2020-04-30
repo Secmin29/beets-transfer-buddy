@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+
+while test $# -gt 0; do
+    case "$1" in
+        -h|--help)
+            echo "Beets Music Transfer Buddy:"
+            echo "Transfer music to your Android Phone via SSH. Will convert to lossy codec, or directly copy if already in lossy format."
+            echo ""
+            echo "Options:"
+            echo "--artist=ARTIST   Artist to convert and transfer to phone"
+            echo "--album=ALBUM     Album to convert and transfer to phone"
+            echo "--ip-address=IP   Destination IP Address"
+            exit 0
+            ;;
+        --artist*)
+            shift
+            if test $# -gt 0; then
+                artist=$1
+            else
+                echo "No artist specified"
+                exit 1
+            fi
+            shift
+            ;;
+        --list-artists)
+            shift
+            beet ls -f '$albumartist' | sort | uniq
+            exit 0
+            ;;
+        --album*)
+            shift
+            if test $# -gt 0; then
+                album=$1
+            else
+                echo "No album specified"
+                exit 1
+            fi
+            shift
+            ;;
+        --list-albums)
+            shift
+            beet ls -f '$album' | sort | uniq
+            exit 0
+            ;;
+        --ip*|--ip-address*)
+            shift
+            if test $# -gt 0; then
+                ipAddr=$1
+            else
+                echo "No destination IP Address specified"
+                exit 1
+            fi
+            shift
+            ;;
+    esac
+done
+
+if [ -z "$ipAddr" ]; then
+    echo "No destination IP Address specified. Aborting..."
+    exit 1
+fi
+
+# TODO: Build multi-select albums to convert based on artist
+# TODO: Add check for fzf to use if needed
+
+workingDir=$(mktemp -d)
+
+if [[ ! -z $artist && ! -z $album ]]; then
+    beet convert artist:${artist} album:${album} -d $workingDir
+elif [[ ! -z $album ]]; then
+    beet convert album:${album} -d $workingDir
+elif [[ ! -z $artist ]]; then
+    beet convert artist:${artist} -d $workingDir
+else
+    echo "Artist or album not set. Aborting"
+    exit 1
+fi
+
+cd $workingDir
+rsync -avzzL --no-perms --no-times --size-only --info=progress2 -e "ssh -p 2222" . "${ipAddr}:SDCard/Music"
+rm -rf *
