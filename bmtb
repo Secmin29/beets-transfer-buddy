@@ -66,11 +66,11 @@ fi
 workingDir=$(mktemp -d)
 
 if [[ ! -z $artist && ! -z $album ]]; then
-    beet convert artist:${artist} album:${album} -d $workingDir
+    beet convert -a artist:"${artist}" album:"${album}" -d $workingDir
 elif [[ ! -z $album ]]; then
-    beet convert album:${album} -d $workingDir
+    beet convert -a album:"${album}" -d $workingDir
 elif [[ ! -z $artist ]]; then
-    beet convert artist:${artist} -d $workingDir
+    beet convert -a artist:"${artist}" -d $workingDir
 else
     echo "Artist or album not set. Aborting"
     exit 1
