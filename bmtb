@@ -15,7 +15,7 @@ while test $# -gt 0; do
         --artist*)
             shift
             if test $# -gt 0; then
-                artist=$1
+                artist='$1'
             else
                 echo "No artist specified"
                 exit 1
@@ -66,11 +66,11 @@ fi
 workingDir=$(mktemp -d)
 
 if [[ ! -z $artist && ! -z $album ]]; then
-    beet convert -a artist:"${artist}" album:"${album}" -d $workingDir
+    beet convert -a albumartist:"${artist}" album:"${album}" -d $workingDir
 elif [[ ! -z $album ]]; then
-    beet convert -a album:"${album}" -d $workingDir
+    beet convert -a albumalbum:"${album}" -d $workingDir
 elif [[ ! -z $artist ]]; then
-    beet convert -a artist:"${artist}" -d $workingDir
+    beet convert -a albumartist:"${artist}" -d $workingDir
 else
     echo "Artist or album not set. Aborting"
     exit 1
